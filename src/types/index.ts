@@ -272,3 +272,15 @@ export interface Designation {
   level: string;
   baseSalaryRange: string;
 }
+
+export interface CompanyTask {
+  id: string;
+  title: string;
+  category: string;
+  timeSlot?: string;
+  dueDate?: string;
+  completed: boolean;
+  assignedTo?: string;
+  createdAt: string;
+  photoUrl?: string;
+}

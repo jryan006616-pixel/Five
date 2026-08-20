@@ -16,6 +16,7 @@ import {
   BreakCategory,
   ProbationStatus,
   EmploymentStatus,
+  CompanyTask,
 } from '../types';
 import {
   INITIAL_USERS,
@@ -30,6 +31,7 @@ import {
   INITIAL_AUDIT_LOGS,
   INITIAL_DEPARTMENTS,
   INITIAL_DESIGNATIONS,
+  INITIAL_COMPANY_TASKS,
 } from '../data/mockData';
 
 interface AppContextType {
@@ -47,6 +49,7 @@ interface AppContextType {
   auditLogs: AuditLogItem[];
   departments: Department[];
   designations: Designation[];
+  companyTasks: CompanyTask[];
   
   // Navigation & View
   activeTab: string;
@@ -73,6 +76,7 @@ interface AppContextType {
     role: UserRole
   ) => User;
   updateOwnPassword: (currentPass: string, newPass: string) => { success: boolean; error?: string };
+  updateCurrentUserProfile: (profile: Partial<User>) => void;
   quickSwitchUser: (userId: string) => void;
   logout: () => void;
 
@@ -105,11 +109,16 @@ interface AppContextType {
   markNotificationAsRead: (id: string) => void;
   markAllNotificationsRead: () => void;
   resetToDefaults: () => void;
+
+  // Tasks Management
+  addCompanyTask: (task: { title: string; category?: string; timeSlot?: string; dueDate?: string; assignedTo?: string; photoUrl?: string }) => void;
+  toggleCompanyTask: (id: string) => void;
+  deleteCompanyTask: (id: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'rhinomds_portal_v4_clean_production';
+const STORAGE_KEY = 'rhinomds_portal_v5_live_user_data';
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   // Initialize state with persistence
@@ -181,6 +190,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return saved ? JSON.parse(saved) : INITIAL_DESIGNATIONS;
   });
 
+  const [companyTasks, setCompanyTasks] = useState<CompanyTask[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY + '_tasks');
+    return saved ? JSON.parse(saved) : INITIAL_COMPANY_TASKS;
+  });
+
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [selectedEmployeeForDetail, setSelectedEmployeeForDetail] = useState<Employee | null>(null);
   const [selectedPayslipForModal, setSelectedPayslipForModal] = useState<Payslip | null>(null);
@@ -204,7 +218,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     localStorage.setItem(STORAGE_KEY + '_policy', JSON.stringify(policy));
     localStorage.setItem(STORAGE_KEY + '_notifications', JSON.stringify(notifications));
     localStorage.setItem(STORAGE_KEY + '_audit', JSON.stringify(auditLogs));
-  }, [allEmployees, attendanceRecords, kpiRecords, salaryRecords, deductions, payslips, policy, notifications, auditLogs]);
+    localStorage.setItem(STORAGE_KEY + '_tasks', JSON.stringify(companyTasks));
+  }, [allEmployees, attendanceRecords, kpiRecords, salaryRecords, deductions, payslips, policy, notifications, auditLogs, companyTasks]);
 
   // Current Employee object derived from current authenticated user
   const currentEmployee = currentUser 
@@ -419,6 +434,63 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     );
 
     return { success: true };
+  };
+
+  const updateCurrentUserProfile = (profile: Partial<User>) => {
+    if (!currentUser) return;
+    const updatedUser: User = {
+      ...currentUser,
+      ...profile,
+    };
+    setCurrentUser(updatedUser);
+    setAllUsers(prev => prev.map(u => (u.id === currentUser.id ? updatedUser : u)));
+
+    // If employee profile exists, sync photo / name if updated
+    if (profile.fullName || profile.avatar) {
+      setAllEmployees(prev =>
+        prev.map(e =>
+          e.userId === currentUser.id || e.id === currentUser.employeeId
+            ? {
+                ...e,
+                ...(profile.fullName ? { fullName: profile.fullName } : {}),
+                ...(profile.avatar ? { profilePhoto: profile.avatar } : {}),
+              }
+            : e
+        )
+      );
+    }
+  };
+
+  const addCompanyTask = (task: {
+    title: string;
+    category?: string;
+    timeSlot?: string;
+    dueDate?: string;
+    assignedTo?: string;
+    photoUrl?: string;
+  }) => {
+    const newTask: CompanyTask = {
+      id: `TSK-${Date.now()}`,
+      title: task.title.trim(),
+      category: task.category || 'Operations',
+      timeSlot: task.timeSlot || 'Live Schedule',
+      dueDate: task.dueDate || 'Today',
+      completed: false,
+      assignedTo: task.assignedTo || currentUser?.fullName || 'Admin',
+      createdAt: new Date().toISOString(),
+      photoUrl: task.photoUrl,
+    };
+    setCompanyTasks(prev => [newTask, ...prev]);
+  };
+
+  const toggleCompanyTask = (id: string) => {
+    setCompanyTasks(prev =>
+      prev.map(t => (t.id === id ? { ...t, completed: !t.completed } : t))
+    );
+  };
+
+  const deleteCompanyTask = (id: string) => {
+    setCompanyTasks(prev => prev.filter(t => t.id !== id));
   };
 
   const quickSwitchUser = (userId: string) => {
@@ -1098,6 +1170,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         auditLogs,
         departments,
         designations,
+        companyTasks,
         activeTab,
         setActiveTab,
         selectedEmployeeForDetail,
@@ -1109,6 +1182,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         adminResetPassword,
         adminCreateUserAccount,
         updateOwnPassword,
+        updateCurrentUserProfile,
         quickSwitchUser,
         logout,
         canAccessEmployeeData,
@@ -1131,6 +1205,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         markNotificationAsRead,
         markAllNotificationsRead,
         resetToDefaults,
+        addCompanyTask,
+        toggleCompanyTask,
+        deleteCompanyTask,
       }}
     >
       {children}

@@ -96,20 +96,20 @@ const PortalMain: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#070a12] text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-white">
-      {/* Top Header Navbar */}
-      <HeaderNavbar onMenuToggle={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)} />
+    <div className="min-h-screen bg-[#121316] text-[#141619] flex selection:bg-[#d6f932] selection:text-black">
+      {/* Sidebar Navigation */}
+      <Sidebar
+        isMobileOpen={isMobileSidebarOpen}
+        onCloseMobile={() => setIsMobileSidebarOpen(false)}
+      />
 
-      {/* Main Structural Body */}
-      <div className="flex-1 flex w-full relative">
-        {/* Sidebar Navigation */}
-        <Sidebar
-          isMobileOpen={isMobileSidebarOpen}
-          onCloseMobile={() => setIsMobileSidebarOpen(false)}
-        />
+      {/* Main App Canvas Container */}
+      <div className="flex-1 flex flex-col min-w-0 bg-[#eae8e3] lg:rounded-l-[2.5rem] overflow-hidden border-l border-[#26282e]/80 shadow-2xl">
+        {/* Top Header Navbar */}
+        <HeaderNavbar onMenuToggle={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)} />
 
-        {/* Dynamic Main Workspace Canvas */}
-        <main className="flex-1 min-w-0 p-3 sm:p-5 lg:p-6 max-w-[1650px] mx-auto w-full overflow-x-hidden">
+        {/* Dynamic Main Workspace View */}
+        <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto w-full overflow-y-auto custom-scrollbar">
           {renderContent()}
         </main>
       </div>

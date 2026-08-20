@@ -1,1 +1,62 @@
 @import "tailwindcss";
+
+@layer utilities {
+  /* Sleek Minimalist Scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.35);
+    border-radius: 9999px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.6);
+  }
+
+  /* Bento Cards */
+  .bento-card {
+    background-color: #ffffff;
+    border-radius: 1.5rem;
+    box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.03), 0 2px 6px -2px rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(226, 232, 240, 0.6);
+  }
+
+  .bento-card-butter {
+    background-color: #fbf5e6;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(245, 235, 210, 0.8);
+  }
+
+  .bento-card-silver {
+    background: linear-gradient(135deg, #e1e6ed 0%, #eaeef3 100%);
+    border-radius: 1.5rem;
+    border: 1px solid rgba(215, 223, 233, 0.7);
+  }
+
+  .bento-card-metallic {
+    background: linear-gradient(135deg, #cfd6df 0%, #e6eae4 50%, #d5dbd3 100%);
+    border-radius: 1.5rem;
+  }
+
+  .bento-card-dark {
+    background: linear-gradient(145deg, #18191d 0%, #121316 100%);
+    border-radius: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+}
+
+/* Base Body Setup */
+body {
+  background-color: #121316;
+  color: #141619;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+

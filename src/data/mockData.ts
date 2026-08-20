@@ -11,6 +11,7 @@ import {
   AuditLogItem,
   Department,
   Designation,
+  CompanyTask,
 } from '../types';
 
 export const INITIAL_USERS: User[] = [
@@ -167,3 +168,5 @@ export const INITIAL_AUDIT_LOGS: AuditLogItem[] = [
     category: 'Authentication',
   }
 ];
+
+export const INITIAL_COMPANY_TASKS: CompanyTask[] = [];

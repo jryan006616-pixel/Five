@@ -3,7 +3,6 @@ import { useApp } from '../../context/AppContext';
 import {
   Bell,
   Clock,
-  Shield,
   User,
   LogOut,
   ChevronDown,
@@ -15,6 +14,7 @@ import {
   DollarSign,
   Award,
   Menu,
+  Search,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -45,17 +45,14 @@ export const HeaderNavbar: React.FC<NavbarProps> = ({ onToggleSidebar, onMenuTog
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      // Format PKT time
       setCurrentTimePkt(
         now.toLocaleTimeString('en-US', {
           hour: '2-digit',
           minute: '2-digit',
-          second: '2-digit',
           hour12: true,
         })
       );
-      // Format US EST time (approx UTC-5)
-      const estDate = new Date(now.getTime() - 10 * 3600 * 1000); // approx EST offset
+      const estDate = new Date(now.getTime() - 10 * 3600 * 1000);
       setCurrentTimeEst(
         estDate.toLocaleTimeString('en-US', {
           hour: '2-digit',
@@ -72,7 +69,6 @@ export const HeaderNavbar: React.FC<NavbarProps> = ({ onToggleSidebar, onMenuTog
 
   if (!currentUser) return null;
 
-  // Filter notifications for current user (or 'all')
   const userNotifs = notifications.filter(
     n => n.targetUserId === 'all' || n.targetUserId === currentUser.id
   );
@@ -82,72 +78,82 @@ export const HeaderNavbar: React.FC<NavbarProps> = ({ onToggleSidebar, onMenuTog
     switch (type) {
       case 'salary':
       case 'deduction':
-        return <DollarSign className="w-4 h-4 text-emerald-400" />;
+        return <DollarSign className="w-4 h-4 text-emerald-600" />;
       case 'bonus':
-        return <Award className="w-4 h-4 text-amber-400" />;
+        return <Award className="w-4 h-4 text-amber-600" />;
       case 'payslip':
-        return <FileText className="w-4 h-4 text-cyan-400" />;
+        return <FileText className="w-4 h-4 text-indigo-600" />;
       case 'probation':
-        return <AlertTriangle className="w-4 h-4 text-amber-400" />;
+        return <AlertTriangle className="w-4 h-4 text-amber-600" />;
       default:
-        return <CheckCircle2 className="w-4 h-4 text-sky-400" />;
+        return <CheckCircle2 className="w-4 h-4 text-sky-600" />;
     }
   };
 
+  const firstName = currentUser.fullName.split(' ')[0] || currentUser.username;
+
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 md:px-6 bg-[#0c121e]/90 backdrop-blur-md border-b border-slate-800/80">
-      {/* Left: Mobile Toggle & Live RCM Shift Clock */}
+    <header className="sticky top-0 z-20 flex items-center justify-between h-20 px-4 sm:px-8 bg-[#eae8e3]/90 backdrop-blur-md border-b border-[#d8d5cc]/80">
+      {/* Left: Mobile Toggle & Big Greeting */}
       <div className="flex items-center gap-3">
         <button
           onClick={toggleHandler}
-          className="p-2 text-slate-400 hover:text-white rounded-lg lg:hidden hover:bg-slate-800/60"
+          className="p-2 text-slate-700 hover:text-black rounded-xl lg:hidden hover:bg-black/5 cursor-pointer"
           title="Toggle Navigation"
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        {/* Dual US & PKT Dual Time Clock (Crucial for Medical Billing Teams) */}
-        <div className="hidden sm:flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-800/90 text-xs">
-          <div className="flex items-center gap-1.5 text-cyan-400 font-mono font-medium">
-            <Clock className="w-3.5 h-3.5 animate-pulse" />
-            <span>PKT: {currentTimePkt || '06:00 PM'}</span>
-          </div>
-          <span className="text-slate-700">|</span>
-          <div className="flex items-center gap-1.5 text-slate-300 font-mono">
-            <Globe className="w-3.5 h-3.5 text-sky-400" />
-            <span>US EST (Houston): {currentTimeEst || '08:00 AM'}</span>
-          </div>
-          <span className="px-1.5 py-0.2 text-[10px] uppercase font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-800/40 rounded">
-            Live Shift
-          </span>
+        <div>
+          <h1 className="text-xl sm:text-2xl font-black font-['Outfit'] text-[#141619] tracking-tight leading-none">
+            Hello {firstName}
+          </h1>
+          <p className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-1">
+            {currentUser.role === 'admin' ? 'RHINOMDS OPERATIONS & HR PORTAL' : 'RCM SPECIALIST WORKSPACE'}
+          </p>
         </div>
       </div>
 
-      {/* Right: Quick Persona Switcher + Notifications + User Menu */}
-      <div className="flex items-center gap-3">
-        {/* Quick Role / Persona Switcher for effortless testing & evaluation */}
+      {/* Right: Live Shift Clock + Role Switcher + Search + Notifications + Logout */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        {/* Dual Live Shift Clock */}
+        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 border border-[#d8d5cc] shadow-xs text-xs">
+          <div className="flex items-center gap-1.5 text-slate-700 font-mono font-medium">
+            <Clock className="w-3.5 h-3.5 text-slate-900" />
+            <span className="text-slate-400 text-[10px] uppercase font-bold">PKT:</span>
+            <span className="font-bold">{currentTimePkt || '06:00 PM'}</span>
+          </div>
+          <span className="text-slate-300">|</span>
+          <div className="flex items-center gap-1.5 text-slate-700 font-mono">
+            <Globe className="w-3.5 h-3.5 text-slate-400" />
+            <span className="text-slate-400 text-[10px] uppercase font-bold">EST:</span>
+            <span className="font-semibold">{currentTimeEst || '08:00 AM'}</span>
+          </div>
+        </div>
+
+        {/* Quick Role / Persona Switcher */}
         <div className="relative">
           <button
             onClick={() => setShowPersonaMenu(!showPersonaMenu)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-950/80 to-slate-900 border border-cyan-700/50 hover:border-cyan-500 text-xs text-slate-200 transition-all shadow-sm shadow-cyan-950/30"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#121316] text-white hover:bg-black text-xs font-semibold shadow-sm transition-all cursor-pointer"
           >
-            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="hidden md:inline font-medium text-slate-400">Switch Persona:</span>
-            <span className="font-semibold text-cyan-300">
-              {currentUser.role === 'admin' ? '👑 Admin' : `👤 ${currentUser.fullName.split(' ')[0] || currentUser.username}`}
+            <Sparkles className="w-3.5 h-3.5 text-[#d6f932]" />
+            <span className="hidden sm:inline font-mono uppercase text-[10px] text-slate-400">ROLE:</span>
+            <span className="text-white text-xs font-bold font-mono">
+              {currentUser.role === 'admin' ? 'ADMIN' : 'STAFF'}
             </span>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
           </button>
 
           {showPersonaMenu && (
-            <div className="absolute right-0 mt-2 w-72 rounded-xl bg-[#0f172a] border border-slate-700 shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-100">
-              <div className="px-3 py-2 border-b border-slate-800">
-                <p className="text-xs font-semibold text-white">Instant Account Switcher</p>
-                <p className="text-[11px] text-slate-400">
-                  Switch between Admin and Employee roles to test full RBAC permissions.
+            <div className="absolute right-0 mt-2 w-72 rounded-3xl bg-white border border-slate-200 shadow-2xl p-3 z-50 animate-in fade-in zoom-in-95 duration-100">
+              <div className="px-3 py-2 border-b border-slate-100">
+                <p className="text-xs font-bold text-slate-900">Instant Persona Switcher</p>
+                <p className="text-[11px] text-slate-500">
+                  Switch between Admin & Staff accounts instantly.
                 </p>
               </div>
-              <div className="py-1 space-y-1">
+              <div className="py-1 space-y-1 max-h-64 overflow-y-auto custom-scrollbar">
                 {allUsers.map(u => (
                   <button
                     key={u.id}
@@ -155,30 +161,30 @@ export const HeaderNavbar: React.FC<NavbarProps> = ({ onToggleSidebar, onMenuTog
                       quickSwitchUser(u.id);
                       setShowPersonaMenu(false);
                     }}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-left text-xs transition-colors ${
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl text-left text-xs transition-colors cursor-pointer ${
                       u.id === currentUser.id
-                        ? 'bg-cyan-950/70 text-cyan-300 border border-cyan-800/60'
-                        : 'text-slate-300 hover:bg-slate-800/80'
+                        ? 'bg-[#121316] text-white font-bold'
+                        : 'text-slate-700 hover:bg-slate-100'
                     }`}
                   >
                     <div className="flex items-center gap-2">
                       <img
                         src={u.avatar}
                         alt={u.fullName}
-                        className="w-6 h-6 rounded-full object-cover border border-slate-700"
+                        className="w-7 h-7 rounded-xl object-cover border border-slate-200"
                       />
                       <div>
-                        <p className="font-semibold text-slate-200">{u.fullName}</p>
-                        <p className="text-[10px] text-slate-400">
-                          {u.role === 'admin' ? 'Director of HR (Admin)' : u.username}
+                        <p className="font-semibold">{u.fullName}</p>
+                        <p className={`text-[10px] ${u.id === currentUser.id ? 'text-slate-400' : 'text-slate-500'}`}>
+                          {u.role === 'admin' ? 'Admin Director' : u.username}
                         </p>
                       </div>
                     </div>
                     <span
-                      className={`px-1.5 py-0.5 text-[9px] font-bold rounded uppercase ${
+                      className={`px-2 py-0.5 text-[9px] font-mono font-bold rounded-full uppercase ${
                         u.role === 'admin'
-                          ? 'bg-amber-950/80 text-amber-300 border border-amber-800/60'
-                          : 'bg-slate-800 text-slate-300'
+                          ? 'bg-amber-100 text-amber-900 border border-amber-200'
+                          : 'bg-slate-200 text-slate-800'
                       }`}
                     >
                       {u.role}
@@ -190,41 +196,41 @@ export const HeaderNavbar: React.FC<NavbarProps> = ({ onToggleSidebar, onMenuTog
           )}
         </div>
 
-        {/* Notifications Popover */}
+        {/* Notifications Button */}
         <div className="relative">
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="relative p-2 text-slate-400 hover:text-white rounded-lg bg-slate-900/60 border border-slate-800 hover:bg-slate-800/80 transition-colors"
+            className="relative p-2.5 text-slate-700 hover:text-black rounded-full bg-white border border-[#d8d5cc] shadow-xs hover:shadow-md transition-all cursor-pointer"
             title="Notifications"
           >
             <Bell className="w-4 h-4" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-cyan-500 rounded-full animate-pulse">
+              <span className="absolute -top-1 -right-1 flex items-center justify-center w-4 h-4 text-[9px] font-black text-black bg-[#d6f932] rounded-full shadow-sm">
                 {unreadCount}
               </span>
             )}
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-xl bg-[#0f172a] border border-slate-700 shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
-              <div className="flex items-center justify-between px-4 py-3 bg-slate-900/90 border-b border-slate-800">
+            <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-3xl bg-white border border-slate-200 shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+              <div className="flex items-center justify-between px-5 py-3.5 bg-slate-50 border-b border-slate-100">
                 <div className="flex items-center gap-2">
-                  <Bell className="w-4 h-4 text-cyan-400" />
-                  <span className="text-xs font-bold text-white">Notifications ({unreadCount} unread)</span>
+                  <Bell className="w-4 h-4 text-slate-800" />
+                  <span className="text-xs font-bold text-slate-900">Notifications ({unreadCount} unread)</span>
                 </div>
                 {unreadCount > 0 && (
                   <button
                     onClick={markAllNotificationsRead}
-                    className="text-[11px] text-cyan-400 hover:underline"
+                    className="text-[11px] font-semibold text-slate-600 hover:text-black cursor-pointer"
                   >
                     Mark all read
                   </button>
                 )}
               </div>
 
-              <div className="max-h-80 overflow-y-auto divide-y divide-slate-800/60">
+              <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 custom-scrollbar">
                 {userNotifs.length === 0 ? (
-                  <div className="p-6 text-center text-xs text-slate-500">No notifications yet</div>
+                  <div className="p-6 text-center text-xs text-slate-400">No notifications yet</div>
                 ) : (
                   userNotifs.map(n => (
                     <div
@@ -234,27 +240,27 @@ export const HeaderNavbar: React.FC<NavbarProps> = ({ onToggleSidebar, onMenuTog
                         if (n.linkTab) setActiveTab(n.linkTab);
                         setShowNotifications(false);
                       }}
-                      className={`p-3 text-xs transition-colors cursor-pointer ${
-                        !n.read ? 'bg-cyan-950/30 hover:bg-cyan-950/50' : 'hover:bg-slate-800/40'
+                      className={`p-3.5 text-xs transition-colors cursor-pointer ${
+                        !n.read ? 'bg-amber-50/50 hover:bg-amber-50' : 'hover:bg-slate-50'
                       }`}
                     >
                       <div className="flex items-start gap-2.5">
-                        <div className="p-1.5 rounded-lg bg-slate-800/90 border border-slate-700/60 shrink-0">
+                        <div className="p-2 rounded-xl bg-white border border-slate-200 shrink-0 shadow-xs">
                           {getNotifIcon(n.type)}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <p className={`font-semibold truncate ${!n.read ? 'text-white' : 'text-slate-300'}`}>
+                            <p className="font-bold text-slate-900 truncate">
                               {n.title}
                             </p>
                             {!n.read && (
-                              <span className="w-2 h-2 rounded-full bg-cyan-400 shrink-0 ml-1"></span>
+                              <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0 ml-1"></span>
                             )}
                           </div>
-                          <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-2 leading-relaxed">
+                          <p className="text-[11px] text-slate-600 mt-0.5 line-clamp-2 leading-relaxed">
                             {n.message}
                           </p>
-                          <span className="text-[10px] text-slate-500 mt-1 inline-block">
+                          <span className="text-[10px] text-slate-400 mt-1 inline-block font-mono">
                             {n.createdAt}
                           </span>
                         </div>
@@ -267,31 +273,16 @@ export const HeaderNavbar: React.FC<NavbarProps> = ({ onToggleSidebar, onMenuTog
           )}
         </div>
 
-        {/* User Profile Pill & Logout */}
-        <div className="flex items-center gap-2.5 pl-2 border-l border-slate-800">
-          <div className="flex items-center gap-2">
-            <img
-              src={currentUser.avatar}
-              alt={currentUser.fullName}
-              className="w-8 h-8 rounded-lg object-cover border border-cyan-500/40"
-            />
-            <div className="hidden lg:block text-left">
-              <p className="text-xs font-bold text-slate-200 leading-tight">{currentUser.fullName}</p>
-              <p className="text-[10px] text-cyan-400 font-medium">
-                {currentUser.role === 'admin' ? 'HR Administrator' : currentEmployee?.designation || 'Specialist'}
-              </p>
-            </div>
-          </div>
-
-          <button
-            onClick={logout}
-            className="p-2 text-slate-400 hover:text-red-400 rounded-lg hover:bg-slate-800/60 transition-colors"
-            title="Sign Out"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
-        </div>
+        {/* Sign Out Button */}
+        <button
+          onClick={logout}
+          className="p-2.5 text-slate-700 hover:text-rose-600 rounded-full bg-white border border-[#d8d5cc] shadow-xs hover:shadow-md transition-all cursor-pointer"
+          title="Sign Out"
+        >
+          <LogOut className="w-4 h-4" />
+        </button>
       </div>
     </header>
   );
 };
+
