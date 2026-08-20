@@ -1,0 +1,6 @@
+{
+  "name": "Rhinomds Employee Portal",
+  "description": "Modern, futuristic, enterprise-grade Employee Management Portal for Rhinomds with secure role-based access, attendance & break tracking, KPI & bonus management, automated probation tracking, salary slips, and administrative analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
