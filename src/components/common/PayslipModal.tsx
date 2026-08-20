@@ -21,11 +21,11 @@ export const PayslipModal: React.FC<PayslipModalProps> = ({ payslip, onClose }) 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-3xl my-8 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-3xl my-auto sm:my-4 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         
         {/* Top Control Bar (Hidden when printing) */}
-        <div className="flex items-center justify-between px-6 py-4 bg-slate-950 border-b border-slate-800 print:hidden">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-3.5 bg-slate-950 border-b border-slate-800 shrink-0 print:hidden">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-cyan-400" />
             <span className="text-sm font-bold text-white">Official Rhinomds Salary Slip</span>
@@ -37,21 +37,21 @@ export const PayslipModal: React.FC<PayslipModalProps> = ({ payslip, onClose }) 
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-xs font-semibold text-white transition-colors shadow-sm shadow-cyan-600/30"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-xs font-semibold text-white transition-colors shadow-sm shadow-cyan-600/30 cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>Print Payslip</span>
+              <span className="hidden sm:inline">Print Payslip</span>
             </button>
             <button
               onClick={handleDownload}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 transition-colors cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>Save as PDF</span>
+              <span className="hidden sm:inline">PDF</span>
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -59,7 +59,7 @@ export const PayslipModal: React.FC<PayslipModalProps> = ({ payslip, onClose }) 
         </div>
 
         {/* Printable Payslip Body */}
-        <div id="printable-payslip" className="p-8 bg-slate-900 text-slate-100 print:bg-white print:text-black print:p-6 relative overflow-hidden">
+        <div id="printable-payslip" className="flex-1 overflow-y-auto p-5 sm:p-8 bg-slate-900 text-slate-100 print:bg-white print:text-black print:p-6 relative">
           
           {/* Subtle Watermark background */}
           <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none select-none">

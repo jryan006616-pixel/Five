@@ -347,9 +347,9 @@ export const EmployeeManagement: React.FC = () => {
 
       {/* Add New Employee Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs overflow-y-auto">
-          <div className="w-full max-w-3xl my-8 rounded-2xl bg-[#0b101b] border border-slate-700 shadow-2xl p-6 space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-sm overflow-y-auto">
+          <div className="relative w-full max-w-3xl my-auto sm:my-4 rounded-2xl bg-[#0b101b] border border-slate-700 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between px-5 sm:px-6 py-3.5 border-b border-slate-800 bg-[#0f172a] shrink-0">
               <div className="flex items-center gap-2">
                 <UserPlus className="w-5 h-5 text-cyan-400" />
                 <h3 className="text-base font-bold text-white font-['Space_Grotesk']">
@@ -358,13 +358,13 @@ export const EmployeeManagement: React.FC = () => {
               </div>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="text-slate-400 hover:text-white"
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleAddSubmit} className="space-y-5 text-xs">
+            <form id="add-employee-form" onSubmit={handleAddSubmit} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 text-xs">
               {/* 1. Personal & Contact Information */}
               <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3">
                 <h4 className="font-bold text-slate-200 flex items-center gap-2 text-xs">
@@ -695,31 +695,34 @@ export const EmployeeManagement: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold transition-colors"
-                >
-                  Create & Enroll Employee
-                </button>
-              </div>
             </form>
+
+            {/* Sticky Action Footer */}
+            <div className="flex items-center justify-end gap-2 px-5 sm:px-6 py-3 border-t border-slate-800 bg-[#0f172a] shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowAddModal(false)}
+                className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                form="add-employee-form"
+                className="px-5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold transition-colors shadow-lg shadow-cyan-950/40 cursor-pointer"
+              >
+                Create & Enroll Employee
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* Edit Full Employee Modal */}
       {editingEmployee && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs overflow-y-auto">
-          <div className="w-full max-w-3xl my-8 rounded-2xl bg-[#0b101b] border border-slate-700 shadow-2xl p-6 space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-sm overflow-y-auto">
+          <div className="relative w-full max-w-3xl my-auto sm:my-4 rounded-2xl bg-[#0b101b] border border-slate-700 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between px-5 sm:px-6 py-3.5 border-b border-slate-800 bg-[#0f172a] shrink-0">
               <div className="flex items-center gap-2">
                 <Edit2 className="w-5 h-5 text-cyan-400" />
                 <h3 className="text-base font-bold text-white font-['Space_Grotesk']">
@@ -728,13 +731,13 @@ export const EmployeeManagement: React.FC = () => {
               </div>
               <button
                 onClick={() => setEditingEmployee(null)}
-                className="text-slate-400 hover:text-white"
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleEditSubmit} className="space-y-5 text-xs">
+            <form id="edit-employee-form" onSubmit={handleEditSubmit} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 text-xs">
               {/* 1. Personal & Contact Information */}
               <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3">
                 <h4 className="font-bold text-slate-200 flex items-center gap-2 text-xs">
@@ -1013,22 +1016,25 @@ export const EmployeeManagement: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setEditingEmployee(null)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold"
-                >
-                  Save All Changes
-                </button>
-              </div>
             </form>
+
+            {/* Sticky Action Footer */}
+            <div className="flex items-center justify-end gap-2 px-5 sm:px-6 py-3 border-t border-slate-800 bg-[#0f172a] shrink-0">
+              <button
+                type="button"
+                onClick={() => setEditingEmployee(null)}
+                className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                form="edit-employee-form"
+                className="px-5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold transition-colors shadow-lg shadow-cyan-950/40 cursor-pointer"
+              >
+                Save All Changes
+              </button>
+            </div>
           </div>
         </div>
       )}
