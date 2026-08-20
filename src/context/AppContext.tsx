@@ -649,32 +649,32 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       userId: newUserId,
       fullName: empData.fullName || 'New Employee',
       profilePhoto: empData.profilePhoto || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80',
-      dateOfBirth: empData.dateOfBirth || '1998-01-01',
+      dateOfBirth: empData.dateOfBirth || '',
       gender: empData.gender || 'Male',
       email: empData.email || `${empData.fullName?.toLowerCase().replace(/\s+/g, '.') || 'emp'}@rhinomds.com`,
-      phone: empData.phone || '+92 (300) 000-0000',
-      address: empData.address || 'Karachi, Pakistan',
-      emergencyContact: empData.emergencyContact || 'Family Member',
-      emergencyContactPhone: empData.emergencyContactPhone || '+92 (300) 000-0001',
-      emergencyContactRelation: empData.emergencyContactRelation || 'Guardian',
-      designation: empData.designation || 'Medical Billing Officer',
+      phone: empData.phone || '',
+      address: empData.address || '',
+      emergencyContact: empData.emergencyContact || '',
+      emergencyContactPhone: empData.emergencyContactPhone || '',
+      emergencyContactRelation: empData.emergencyContactRelation || '',
+      designation: empData.designation || 'Medical Billing Specialist',
       department: empData.department || 'Medical Billing',
       dateOfJoining: joinDate,
-      employmentStatus: 'Probation',
+      employmentStatus: empData.employmentStatus || 'Probation',
       employmentType: empData.employmentType || 'Night Shift - US Timing',
-      reportingManager: empData.reportingManager || 'Kamran Haider (RCM Team Lead)',
-      workLocation: empData.workLocation || 'Karachi RCM Operations Center',
-      shiftTiming: empData.shiftTiming || '06:00 PM - 03:00 AM PKT (US EST Shift)',
+      reportingManager: empData.reportingManager || '',
+      workLocation: empData.workLocation || 'Karachi Operations Center',
+      shiftTiming: empData.shiftTiming || '',
       probationEndDate: probationEndDateStr,
-      probationStatus: 'Probation',
-      probationRemarks: '3-Month initial probation started on joining date.',
+      probationStatus: empData.probationStatus || 'Probation',
+      probationRemarks: empData.probationRemarks || '3-Month initial probation started on joining date.',
       monthlySalary: initialSalary,
       currentBonus: 0,
       currentDeductions: 0,
       salaryEffectiveDate: joinDate,
       paymentFrequency: 'Monthly',
-      bankAccountNumber: empData.bankAccountNumber || 'PK00BANK0000000000000000',
-      bankName: empData.bankName || 'Meezan Bank Limited',
+      bankAccountNumber: empData.bankAccountNumber || '',
+      bankName: empData.bankName || '',
       accountStatus: 'Active',
     };
 
@@ -714,11 +714,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       year: 2026,
       baseSalary: initialSalary,
       bonus: 0,
-      otherEarnings: 4000,
-      grossSalary: initialSalary + 4000,
+      otherEarnings: 0,
+      grossSalary: initialSalary,
       deductions: [],
       totalDeductions: 0,
-      netSalary: initialSalary + 4000,
+      netSalary: initialSalary,
       currency: 'RS',
       effectiveDate: joinDate,
       paymentFrequency: 'Monthly',
@@ -742,6 +742,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     
     // Sync user fullName and email
     setAllUsers(prev => prev.map(u => (u.employeeId === emp.id ? { ...u, fullName: emp.fullName, email: emp.email } : u)));
+
+    // Sync salary records baseSalary
+    setSalaryRecords(prev => prev.map(s => {
+      if (s.employeeId === emp.id && s.month === 'August 2026') {
+        const gross = emp.monthlySalary + (s.bonus || 0) + (s.otherEarnings || 0);
+        return {
+          ...s,
+          baseSalary: emp.monthlySalary,
+          grossSalary: gross,
+          netSalary: gross - (s.totalDeductions || 0),
+        };
+      }
+      return s;
+    }));
 
     logAudit(
       'Employee Updated',

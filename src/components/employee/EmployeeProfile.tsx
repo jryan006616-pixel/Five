@@ -258,10 +258,16 @@ export const EmployeeProfile: React.FC = () => {
 
             <div className="pt-2 border-t border-slate-800">
               <span className="text-[11px] text-slate-400 block">Disbursement Bank Account</span>
-              <p className="font-semibold text-slate-200">{currentEmployee.bankName || 'Meezan Bank'}</p>
-              <p className="font-mono text-cyan-400 text-[11px]">
-                {currentEmployee.bankAccountNumber || 'PK36MEZN0001122334455667'}
-              </p>
+              {currentEmployee.bankName ? (
+                <>
+                  <p className="font-semibold text-slate-200">{currentEmployee.bankName}</p>
+                  <p className="font-mono text-cyan-400 text-[11px]">
+                    {currentEmployee.bankAccountNumber || 'No Account Number Recorded'}
+                  </p>
+                </>
+              ) : (
+                <p className="text-slate-500 italic text-[11px] mt-1">Not configured / Direct Disbursement</p>
+              )}
             </div>
           </div>
         </div>
@@ -292,7 +298,7 @@ export const EmployeeProfile: React.FC = () => {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-400 text-[11px]">Assigned By:</span>
-                <span className="text-slate-300">{currentUser?.assignedBy || 'HR Admin (Sarah Jenkins)'}</span>
+                <span className="text-slate-300">{currentUser?.assignedBy || 'HR Administration'}</span>
               </div>
             </div>
 
