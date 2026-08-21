@@ -29,8 +29,8 @@ export default async function handler(req: any, res: any) {
         const data = await response.json();
         res.status(200).json(data);
         return;
-      } catch (e) {
-        // No blob saved yet
+      } catch (e: any) {
+        console.error('SYNC_GET_ERROR', e?.name, e?.message);
         res.status(200).json(null);
         return;
       }
@@ -58,6 +58,7 @@ export default async function handler(req: any, res: any) {
 
     res.status(405).json({ error: 'Method not allowed' });
   } catch (error: any) {
-    res.status(500).json({ error: error?.message || 'Internal error' });
+    console.error('SYNC_API_ERROR', error?.name, error?.message, error?.stack);
+    res.status(500).json({ error: error?.message || 'Internal error', name: error?.name });
   }
 }
