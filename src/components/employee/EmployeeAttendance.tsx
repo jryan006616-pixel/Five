@@ -11,13 +11,22 @@ import {
   Filter,
   ShieldCheck,
   Timer,
+  Zap,
 } from 'lucide-react';
+import {
+  DEFAULT_SHIFT_CONFIG,
+  formatMinutesTo12Hour,
+  parseTimeToMinutes,
+  formatTimeTo12HourWithTimezone,
+} from '../../utils/shiftUtils';
 
 export const EmployeeAttendance: React.FC = () => {
   const { currentEmployee, attendanceRecords, policy } = useApp();
   const [filterMonth, setFilterMonth] = useState('2026-08');
 
   if (!currentEmployee) return null;
+
+  const currentShift = policy.shiftConfig || DEFAULT_SHIFT_CONFIG;
 
   const records = attendanceRecords.filter(
     a => a.employeeId === currentEmployee.id && a.date.startsWith(filterMonth)
@@ -31,13 +40,15 @@ export const EmployeeAttendance: React.FC = () => {
   const totalOvertimeMinutes = records.reduce((acc, r) => acc + r.overtimeMinutes, 0);
 
   const exportCSV = () => {
-    const headers = 'Date,Check In,Check Out,Break Minutes,Working Hours,Status,Notes\n';
+    const headers = 'Date,Check In (PKT),Check Out (PKT),Break Minutes,Working Hours,Status,Late Arrival,Notes\n';
     const rows = records
       .map(
         r =>
-          `"${r.date}","${r.checkInTime || '--'}","${r.checkOutTime || '--'}",${r.totalBreakMinutes},"${(
-            r.totalWorkingMinutes / 60
-          ).toFixed(2)}","${r.status}","${r.notes || ''}"`
+          `"${r.date}","${r.checkInTime ? formatTimeTo12HourWithTimezone(r.checkInTime) : '--'}","${
+            r.checkOutTime ? formatTimeTo12HourWithTimezone(r.checkOutTime) : '--'
+          }",${r.totalBreakMinutes},"${(r.totalWorkingMinutes / 60).toFixed(2)}","${r.status}","${
+            r.isLate ? `Late +${r.lateMinutes}m` : 'No'
+          }","${r.notes || ''}"`
       )
       .join('\n');
     const blob = new Blob([headers + rows], { type: 'text/csv' });
@@ -56,11 +67,11 @@ export const EmployeeAttendance: React.FC = () => {
           <div className="flex items-center gap-2">
             <Clock className="w-5 h-5 text-cyan-400" />
             <h1 className="text-xl font-bold font-['Space_Grotesk'] text-white">
-              My Attendance & Working Hours
+              My Shift Attendance & Working Hours
             </h1>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Automated punch logs, workstation intervals, and shift calculation per Rhinomds RCM Policy.
+            Automated punch logs, workstation intervals, and punctuality calculation per Rhinomds RCM Policy.
           </p>
         </div>
 
@@ -80,11 +91,29 @@ export const EmployeeAttendance: React.FC = () => {
 
           <button
             onClick={exportCSV}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition-colors cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export CSV</span>
           </button>
+        </div>
+      </div>
+
+      {/* Active Shift Info */}
+      <div className="p-4 rounded-xl bg-gradient-to-r from-cyan-950/40 via-slate-900 to-indigo-950/40 border border-cyan-800/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-cyan-500/20 text-cyan-400">
+            <Zap className="w-4 h-4" />
+          </div>
+          <div>
+            <span className="font-bold text-white">Your Assigned Shift Timing:</span>
+            <span className="text-cyan-300 ml-2 font-mono font-semibold">
+              {formatMinutesTo12Hour(parseTimeToMinutes(currentShift.startTime))} – {formatMinutesTo12Hour(parseTimeToMinutes(currentShift.endTime))} PKT ({currentShift.season} Timing)
+            </span>
+            <span className="text-slate-400 ml-2 font-medium">
+              • Grace Period: <strong className="text-emerald-400">{policy.gracePeriodMinutes} mins</strong> (Arrival up to {formatMinutesTo12Hour(parseTimeToMinutes(currentShift.startTime) + policy.gracePeriodMinutes)} is On-Time)
+            </span>
+          </div>
         </div>
       </div>
 
@@ -93,7 +122,7 @@ export const EmployeeAttendance: React.FC = () => {
         <div className="p-4 rounded-xl bg-[#0c121e] border border-slate-800">
           <span className="text-[11px] text-slate-400 font-bold uppercase block">Days Logged</span>
           <p className="text-2xl font-bold font-mono text-cyan-400 mt-1">{totalDaysPresent} Days</p>
-          <span className="text-[10px] text-emerald-400">Target: 22 shift days</span>
+          <span className="text-[10px] text-emerald-400">Monthly attendance</span>
         </div>
 
         <div className="p-4 rounded-xl bg-[#0c121e] border border-slate-800">
@@ -109,22 +138,14 @@ export const EmployeeAttendance: React.FC = () => {
           <p className="text-2xl font-bold font-mono text-amber-400 mt-1">
             {totalBreakMinutes} <span className="text-xs text-slate-400">mins</span>
           </p>
-          <span className="text-[10px] text-slate-500">Allowance: {policy.breakAllowanceMinutes}m/day</span>
+          <span className="text-[10px] text-slate-500">Daily allowance: {policy.breakAllowanceMinutes}m</span>
         </div>
 
         <div className="p-4 rounded-xl bg-[#0c121e] border border-slate-800">
           <span className="text-[11px] text-slate-400 font-bold uppercase block">Late Arrivals</span>
           <p className="text-2xl font-bold font-mono text-rose-400 mt-1">{totalLateArrivals}</p>
-          <span className="text-[10px] text-slate-500">Grace threshold: 15 mins</span>
-        </div>
-      </div>
-
-      {/* Formula Explainer Callout */}
-      <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 text-xs flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <ShieldCheck className="w-5 h-5 text-cyan-400 shrink-0" />
-          <span className="text-slate-300">
-            <strong>System Calculation Rule:</strong> Total Working Hours = (Check-Out Time − Check-In Time) − Total Break Duration. Records are cryptographic & immutable.
+          <span className="text-[10px] text-rose-400">
+            {totalLateArrivals > 0 ? 'Exceeded grace limit' : 'Punctual arrival'}
           </span>
         </div>
       </div>
@@ -143,19 +164,19 @@ export const EmployeeAttendance: React.FC = () => {
             <thead className="bg-slate-950/80 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
               <tr>
                 <th className="p-3.5">Date</th>
-                <th className="p-3.5">Check In</th>
+                <th className="p-3.5">Shift Check-In (PKT)</th>
                 <th className="p-3.5">Break Logs</th>
-                <th className="p-3.5">Check Out</th>
+                <th className="p-3.5">Shift Check-Out (PKT)</th>
                 <th className="p-3.5">Net Working Hours</th>
-                <th className="p-3.5">Status</th>
-                <th className="p-3.5">Audit Remarks</th>
+                <th className="p-3.5">Punctuality Status</th>
+                <th className="p-3.5">System Audit Remarks</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
               {records.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="p-8 text-center text-slate-500">
-                    No attendance records logged for this filter month.
+                    No attendance records logged for this month. Use the Check-In button on the top bar or Dashboard to punch in.
                   </td>
                 </tr>
               ) : (
@@ -164,12 +185,24 @@ export const EmployeeAttendance: React.FC = () => {
                     <td className="p-3.5 font-mono font-semibold text-slate-200">
                       {record.date}
                     </td>
-                    <td className="p-3.5 font-mono text-slate-300">
-                      {record.checkInTime || '--:--'}
-                      {record.isLate && (
-                        <span className="ml-1 text-[10px] text-amber-400 font-bold block">
-                          Late +{record.lateMinutes}m
-                        </span>
+                    <td className="p-3.5 font-mono">
+                      {record.checkInTime ? (
+                        <div>
+                          <span className="font-semibold text-white">
+                            {formatTimeTo12HourWithTimezone(record.checkInTime)}
+                          </span>
+                          {record.isLate ? (
+                            <span className="inline-block mt-0.5 px-1.5 py-0.5 text-[10px] font-bold rounded bg-rose-950 text-rose-300 border border-rose-800">
+                              Late Arrival (+{record.lateMinutes}m)
+                            </span>
+                          ) : (
+                            <span className="inline-block mt-0.5 text-[10px] text-emerald-400 font-semibold">
+                              ✓ On Time
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        '--:--'
                       )}
                     </td>
                     <td className="p-3.5">
@@ -177,11 +210,11 @@ export const EmployeeAttendance: React.FC = () => {
                         <span className="font-mono text-amber-400 font-semibold">
                           {record.totalBreakMinutes} mins
                         </span>
-                        {record.breaks.length > 0 && (
+                        {record.breaks && record.breaks.length > 0 && (
                           <div className="text-[10px] text-slate-400">
                             {record.breaks.map((b, i) => (
                               <div key={i}>
-                                {b.startTime} - {b.endTime || 'Open'} ({b.durationMinutes}m)
+                                {b.startTime ? formatTimeTo12HourWithTimezone(b.startTime) : '--'} - {b.endTime ? formatTimeTo12HourWithTimezone(b.endTime) : 'Open'} ({b.durationMinutes}m)
                                 {b.flaggedExcessive && (
                                   <span className="text-red-400 font-bold ml-1">⚠️ Flagged</span>
                                 )}
@@ -192,7 +225,11 @@ export const EmployeeAttendance: React.FC = () => {
                       </div>
                     </td>
                     <td className="p-3.5 font-mono text-slate-300">
-                      {record.checkOutTime || (record.checkInTime ? 'In Progress' : '--:--')}
+                      {record.checkOutTime
+                        ? formatTimeTo12HourWithTimezone(record.checkOutTime)
+                        : record.checkInTime
+                        ? <span className="text-cyan-400 font-semibold animate-pulse">In Progress</span>
+                        : '--:--'}
                     </td>
                     <td className="p-3.5 font-mono font-bold text-cyan-400">
                       {(record.totalWorkingMinutes / 60).toFixed(2)} hrs
@@ -200,17 +237,19 @@ export const EmployeeAttendance: React.FC = () => {
                     <td className="p-3.5">
                       <span
                         className={`px-2 py-0.5 text-[10px] font-bold rounded-md uppercase ${
-                          record.status === 'Present'
+                          record.isLate
+                            ? 'bg-rose-950 text-rose-300 border border-rose-800'
+                            : record.status === 'Present'
                             ? 'bg-emerald-950 text-emerald-300 border border-emerald-800/60'
-                            : record.status === 'Late'
-                            ? 'bg-amber-950 text-amber-300 border border-amber-800/60'
+                            : record.status === 'Half Day'
+                            ? 'bg-amber-950 text-amber-300 border border-amber-800'
                             : 'bg-red-950 text-red-300 border border-red-800/60'
                         }`}
                       >
                         {record.status}
                       </span>
                     </td>
-                    <td className="p-3.5 text-[11px] text-slate-400 max-w-xs truncate">
+                    <td className="p-3.5 text-[11px] text-slate-400 max-w-xs truncate" title={record.notes}>
                       {record.notes || 'Normal shift workflow.'}
                     </td>
                   </tr>

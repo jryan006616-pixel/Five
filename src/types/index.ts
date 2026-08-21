@@ -93,13 +93,21 @@ export interface KPIRecord {
   employeeId: string;
   month: string; // "August 2026"
   year: number;
-  kpiScore: number; // e.g. 94 (percentage)
+  // 10-Point KPI Model: 3 Points HR + 7 Points Productivity
+  hrPoints: number; // 0 to 3 points (Attendance, Conduct, Punctuality)
+  productivityPoints: number; // 0 to 7 points (Claims Processed, Accuracy, Volume)
+  totalPoints: number; // 0 to 10 points total
+  kpiScore: number; // e.g. 90% (calculated from totalPoints / 10 * 100)
+  maxBonusPool?: number; // e.g. 20000 RS allocated pool
   claimsProcessed?: number;
   accuracyRate?: number; // e.g. 99.2%
   performanceRemarks: string;
+  hrRemarks?: string;
+  productivityRemarks?: string;
   bonusAmount: number; // e.g. 15000 RS
   bonusStatus: BonusStatus;
   bonusReason: string;
+  disbursementCycle?: 'Mid-Month (15th)' | 'Month-Start (1st-5th)';
   reviewedBy: string;
   reviewedDate: string;
 }
@@ -110,6 +118,7 @@ export interface SalaryDeduction {
   month: string; // "August 2026"
   amount: number; // in RS
   deductionType: DeductionType;
+  deductionCategory?: 'Salary' | 'Bonus'; // Applied to Month-Start Salary or Mid-Month Bonus
   date: string; // YYYY-MM-DD
   reason: string; // Crucial transparency
   remarks?: string;
@@ -140,7 +149,9 @@ export interface SalaryRecord {
 
 export interface Payslip {
   id: string;
-  payslipNumber: string; // e.g. "RMD-PAY-2026-08-1001"
+  payslipNumber: string; // e.g. "RMD-PAY-2026-08-1001" or "RMD-BONUS-2026-08-1001"
+  slipType: 'Salary' | 'Bonus'; // 'Salary' = Month-Start Base Salary Slip, 'Bonus' = Mid-Month KPI Bonus Slip
+  disbursementCycle: 'Month-Start (1st-5th)' | 'Mid-Month (15th)';
   employeeId: string;
   employeeName: string;
   employeeCode: string;
@@ -149,9 +160,17 @@ export interface Payslip {
   dateOfJoining: string;
   salaryMonth: string;
   year: number;
+  // Base Salary slip fields
   baseSalary: number;
-  bonus: number;
   otherEarnings: number;
+  // Bonus slip fields (10-Point KPI Model: 3 HR + 7 Productivity)
+  bonus: number;
+  hrPoints?: number;
+  productivityPoints?: number;
+  totalPoints?: number;
+  kpiPercentage?: number;
+  bonusReason?: string;
+  // Financial totals for this specific slip
   grossSalary: number;
   deductionsList: {
     type: string;
@@ -210,11 +229,29 @@ export interface Employee {
   accountStatus: 'Active' | 'Inactive' | 'Suspended';
 }
 
+export type ShiftSeason = 'Regular' | 'Winter' | 'Summer' | 'Custom';
+
+export interface ShiftTimingConfig {
+  shiftName: string; // e.g. "US Night Shift (Karachi RCM Center)"
+  season: ShiftSeason; // 'Regular' | 'Winter' | 'Summer' | 'Custom'
+  startTime: string; // "18:00" (6:00 PM PKT)
+  endTime: string; // "03:00" (3:00 AM PKT next day)
+  isOvernight: boolean; // true
+  timezone: string; // "Asia/Karachi (PKT / UTC+5)"
+  gracePeriodMinutes: number; // 15 mins
+  // Configurable presets for Summer vs Winter seasonal shifts
+  summerStartTime: string; // "18:00" (6:00 PM PKT)
+  summerEndTime: string; // "03:00" (3:00 AM PKT)
+  winterStartTime: string; // "19:00" (7:00 PM PKT) or custom
+  winterEndTime: string; // "04:00" (4:00 AM PKT) or custom
+  halfDayThresholdMinutes: number; // e.g. 180 min (3 hours late)
+}
+
 export interface AttendancePolicy {
   id: string;
   name: string;
   standardDailyHours: number; // 9 hours
-  requiredDailyMinutes: number; // 540 min
+  requiredDailyMinutes: number; // 540 min (480 work + 60 break)
   breakAllowanceMinutes: number; // 60 min total
   maxSingleBreakMinutes: number; // 45 min
   lateArrivalThresholdMinutes: number; // 15 min grace period
@@ -228,6 +265,7 @@ export interface AttendancePolicy {
   weekendRules: string;
   holidayRules: string;
   shiftType: string;
+  shiftConfig: ShiftTimingConfig;
   lastUpdated: string;
   updatedBy: string;
 }

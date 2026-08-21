@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Employee, EmploymentStatus, ProbationStatus } from '../../types';
 import {
@@ -25,10 +25,23 @@ import {
   Landmark,
   MapPin,
   CreditCard,
+  Camera,
+  Upload,
+  Image as ImageIcon,
 } from 'lucide-react';
+
+const HD_AVATAR_PRESETS = [
+  { label: 'Executive Male 1', url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=90' },
+  { label: 'Executive Female 1', url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=90' },
+  { label: 'Executive Male 2', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=90' },
+  { label: 'Executive Female 2', url: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&auto=format&fit=crop&q=90' },
+  { label: 'Executive Male 3', url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop&q=90' },
+  { label: 'Executive Female 3', url: 'https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?w=400&auto=format&fit=crop&q=90' },
+];
 
 const EMPTY_FORM = {
   fullName: '',
+  profilePhoto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=90',
   email: '',
   phone: '',
   gender: 'Male' as 'Male' | 'Female' | 'Other',
@@ -71,6 +84,24 @@ export const EmployeeManagement: React.FC = () => {
   const [customUsername, setCustomUsername] = useState('');
   const [customPassword, setCustomPassword] = useState('');
   const [customRole, setCustomRole] = useState<'employee' | 'admin'>('employee');
+
+  // File Upload Refs
+  const addFileInputRef = useRef<HTMLInputElement | null>(null);
+  const editFileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleFileUpload = (file: File, isEdit: boolean = false) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      if (isEdit && editingEmployee) {
+        setEditingEmployee({ ...editingEmployee, profilePhoto: result });
+      } else {
+        setFormData(prev => ({ ...prev, profilePhoto: result }));
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Filtered employees
   const filtered = allEmployees.filter(emp => {
@@ -365,6 +396,93 @@ export const EmployeeManagement: React.FC = () => {
             </div>
 
             <form id="add-employee-form" onSubmit={handleAddSubmit} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 text-xs">
+              {/* 0. High-Definition Profile Photo Upload & Presets */}
+              <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3">
+                <h4 className="font-bold text-slate-200 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <Camera className="w-4 h-4 text-cyan-400" />
+                    <span>Employee Profile Photo (HD High-Resolution)</span>
+                  </div>
+                  <span className="text-[10px] text-cyan-400 font-mono">Crisp HD Output</span>
+                </h4>
+
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                  {/* Photo Preview */}
+                  <div className="relative group shrink-0">
+                    <img
+                      src={formData.profilePhoto}
+                      alt="Profile Preview"
+                      className="w-20 h-20 rounded-2xl object-cover border-2 border-cyan-500/60 shadow-lg shadow-cyan-950/40"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => addFileInputRef.current?.click()}
+                      className="absolute inset-0 bg-black/60 rounded-2xl flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-semibold"
+                    >
+                      <Upload className="w-4 h-4 mb-0.5" />
+                      <span>Change</span>
+                    </button>
+                  </div>
+
+                  {/* Upload Controls & URL input */}
+                  <div className="flex-1 space-y-2.5 w-full">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <input
+                        type="file"
+                        ref={addFileInputRef}
+                        accept="image/*"
+                        className="hidden"
+                        onChange={e => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileUpload(file, false);
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => addFileInputRef.current?.click()}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition-colors cursor-pointer"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Upload Photo from Device</span>
+                      </button>
+
+                      <span className="text-slate-500 text-[11px]">or pick HD Avatar:</span>
+                      <div className="flex items-center gap-1.5 overflow-x-auto py-1">
+                        {HD_AVATAR_PRESETS.map((preset, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setFormData(prev => ({ ...prev, profilePhoto: preset.url }))}
+                            className={`p-0.5 rounded-xl border-2 transition-all cursor-pointer ${
+                              formData.profilePhoto === preset.url
+                                ? 'border-cyan-400 ring-2 ring-cyan-400/40 scale-105'
+                                : 'border-slate-700 hover:border-slate-500 opacity-70 hover:opacity-100'
+                            }`}
+                            title={preset.label}
+                          >
+                            <img
+                              src={preset.url}
+                              alt={preset.label}
+                              className="w-7 h-7 rounded-lg object-cover"
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <input
+                        type="text"
+                        value={formData.profilePhoto}
+                        onChange={e => setFormData(prev => ({ ...prev, profilePhoto: e.target.value }))}
+                        placeholder="Or paste direct image URL (https://...)"
+                        className="w-full p-2 rounded-lg bg-slate-950 border border-slate-700 text-slate-300 text-[11px] font-mono focus:ring-2 focus:ring-cyan-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* 1. Personal & Contact Information */}
               <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3">
                 <h4 className="font-bold text-slate-200 flex items-center gap-2 text-xs">
@@ -738,6 +856,93 @@ export const EmployeeManagement: React.FC = () => {
             </div>
 
             <form id="edit-employee-form" onSubmit={handleEditSubmit} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 text-xs">
+              {/* 0. High-Definition Profile Photo Upload & Presets */}
+              <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3">
+                <h4 className="font-bold text-slate-200 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <Camera className="w-4 h-4 text-cyan-400" />
+                    <span>Employee Profile Photo (HD High-Resolution)</span>
+                  </div>
+                  <span className="text-[10px] text-cyan-400 font-mono">Crisp HD Output</span>
+                </h4>
+
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                  {/* Photo Preview */}
+                  <div className="relative group shrink-0">
+                    <img
+                      src={editingEmployee.profilePhoto}
+                      alt={editingEmployee.fullName}
+                      className="w-20 h-20 rounded-2xl object-cover border-2 border-cyan-500/60 shadow-lg shadow-cyan-950/40"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => editFileInputRef.current?.click()}
+                      className="absolute inset-0 bg-black/60 rounded-2xl flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-semibold"
+                    >
+                      <Upload className="w-4 h-4 mb-0.5" />
+                      <span>Change</span>
+                    </button>
+                  </div>
+
+                  {/* Upload Controls & URL input */}
+                  <div className="flex-1 space-y-2.5 w-full">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <input
+                        type="file"
+                        ref={editFileInputRef}
+                        accept="image/*"
+                        className="hidden"
+                        onChange={e => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileUpload(file, true);
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => editFileInputRef.current?.click()}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition-colors cursor-pointer"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Upload New Photo</span>
+                      </button>
+
+                      <span className="text-slate-500 text-[11px]">or pick HD Avatar:</span>
+                      <div className="flex items-center gap-1.5 overflow-x-auto py-1">
+                        {HD_AVATAR_PRESETS.map((preset, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setEditingEmployee({ ...editingEmployee, profilePhoto: preset.url })}
+                            className={`p-0.5 rounded-xl border-2 transition-all cursor-pointer ${
+                              editingEmployee.profilePhoto === preset.url
+                                ? 'border-cyan-400 ring-2 ring-cyan-400/40 scale-105'
+                                : 'border-slate-700 hover:border-slate-500 opacity-70 hover:opacity-100'
+                            }`}
+                            title={preset.label}
+                          >
+                            <img
+                              src={preset.url}
+                              alt={preset.label}
+                              className="w-7 h-7 rounded-lg object-cover"
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <input
+                        type="text"
+                        value={editingEmployee.profilePhoto}
+                        onChange={e => setEditingEmployee({ ...editingEmployee, profilePhoto: e.target.value })}
+                        placeholder="Or paste direct image URL (https://...)"
+                        className="w-full p-2 rounded-lg bg-slate-950 border border-slate-700 text-slate-300 text-[11px] font-mono focus:ring-2 focus:ring-cyan-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* 1. Personal & Contact Information */}
               <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3">
                 <h4 className="font-bold text-slate-200 flex items-center gap-2 text-xs">

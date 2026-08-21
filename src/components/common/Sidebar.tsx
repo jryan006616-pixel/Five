@@ -50,7 +50,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'attendance', label: 'ATTENDANCE', icon: Clock },
     { id: 'breaks', label: 'BREAKS & TIME', icon: Coffee },
     { id: 'kpi', label: 'KPI & BONUSES', icon: Award },
-    { id: 'salary', label: 'SALARY DETAILS', icon: DollarSign },
+    { id: 'salary', label: 'DEDUCTIONS & SLIPS', icon: DollarSign },
     { id: 'payslips', label: 'PAYSLIPS', icon: FileText },
     { id: 'policies', label: 'POLICIES', icon: ShieldAlert },
     { id: 'notifications', label: 'NOTIFICATIONS', icon: Bell },

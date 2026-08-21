@@ -13,6 +13,7 @@ import {
   Designation,
   CompanyTask,
 } from '../types';
+import { DEFAULT_SHIFT_CONFIG } from '../utils/shiftUtils';
 
 export const INITIAL_USERS: User[] = [
   {
@@ -129,6 +130,7 @@ export const DEFAULT_ATTENDANCE_POLICY: AttendancePolicy = {
   weekendRules: 'Standard US Billing Team Weekend: Saturday and Sunday off (US market sync). Emergency on-call roster applicable.',
   holidayRules: 'US Federal Holidays observed along with official Pakistan national holidays for offshore operations.',
   shiftType: 'US Night Shift (06:00 PM to 03:00 AM PKT / 08:00 AM to 05:00 PM EST)',
+  shiftConfig: DEFAULT_SHIFT_CONFIG,
   lastUpdated: '2026-08-20',
   updatedBy: 'System Administrator',
 };

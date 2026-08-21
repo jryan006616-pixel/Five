@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
+import { ProfileEditModal } from './ProfileEditModal';
 import {
   Bell,
   Clock,
@@ -15,6 +16,7 @@ import {
   Award,
   Menu,
   Search,
+  Camera,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -38,6 +40,7 @@ export const HeaderNavbar: React.FC<NavbarProps> = ({ onToggleSidebar, onMenuTog
 
   const [showPersonaMenu, setShowPersonaMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [currentTimePkt, setCurrentTimePkt] = useState('');
   const [currentTimeEst, setCurrentTimeEst] = useState('');
 
@@ -273,6 +276,39 @@ export const HeaderNavbar: React.FC<NavbarProps> = ({ onToggleSidebar, onMenuTog
           )}
         </div>
 
+        {/* Profile Picture Display (Editable for Admin only) */}
+        {currentUser.role === 'admin' ? (
+          <button
+            onClick={() => setShowProfileModal(true)}
+            className="flex items-center gap-1.5 p-1 pr-2.5 rounded-full bg-white border border-[#d8d5cc] hover:border-black shadow-xs transition-all cursor-pointer group"
+            title="Update Profile Picture & Admin Information"
+          >
+            <img
+              src={currentUser.avatar}
+              alt={currentUser.fullName}
+              className="w-7 h-7 rounded-full object-cover border border-slate-300 group-hover:scale-105 transition-transform"
+            />
+            <span className="hidden xl:inline text-xs font-bold text-slate-800 truncate max-w-[90px]">
+              {firstName}
+            </span>
+            <Camera className="w-3.5 h-3.5 text-slate-400 group-hover:text-black transition-colors" />
+          </button>
+        ) : (
+          <div
+            className="flex items-center gap-1.5 p-1 pr-3 rounded-full bg-white/80 border border-[#d8d5cc] shadow-xs"
+            title={`${currentUser.fullName} (Managed by HR)`}
+          >
+            <img
+              src={currentUser.avatar}
+              alt={currentUser.fullName}
+              className="w-7 h-7 rounded-full object-cover border border-slate-300"
+            />
+            <span className="hidden sm:inline text-xs font-bold text-slate-800 truncate max-w-[90px]">
+              {firstName}
+            </span>
+          </div>
+        )}
+
         {/* Sign Out Button */}
         <button
           onClick={logout}
@@ -282,6 +318,12 @@ export const HeaderNavbar: React.FC<NavbarProps> = ({ onToggleSidebar, onMenuTog
           <LogOut className="w-4 h-4" />
         </button>
       </div>
+
+      {/* Profile Edit Modal with Computer File Upload */}
+      <ProfileEditModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+      />
     </header>
   );
 };

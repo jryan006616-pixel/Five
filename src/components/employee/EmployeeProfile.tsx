@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useApp } from '../../context/AppContext';
 import {
   User,
@@ -16,18 +16,12 @@ import {
   CheckCircle2,
   KeyRound,
   Lock,
-  Eye,
-  EyeOff,
   Sparkles,
+  ShieldAlert,
 } from 'lucide-react';
 
 export const EmployeeProfile: React.FC = () => {
-  const { currentEmployee, currentUser, canAccessEmployeeData, updateOwnPassword } = useApp();
-
-  const [currentPass, setCurrentPass] = useState('');
-  const [newPass, setNewPass] = useState('');
-  const [showPass, setShowPass] = useState(false);
-  const [passNotice, setPassNotice] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const { currentEmployee, currentUser, canAccessEmployeeData } = useApp();
 
   if (!currentEmployee || !canAccessEmployeeData(currentEmployee.id)) {
     return (
@@ -37,23 +31,12 @@ export const EmployeeProfile: React.FC = () => {
     );
   }
 
-  const handlePasswordChange = (e: React.FormEvent) => {
-    e.preventDefault();
-    setPassNotice(null);
-    const res = updateOwnPassword(currentPass, newPass);
-    if (res.success) {
-      setPassNotice({ type: 'success', text: 'Password successfully updated!' });
-      setCurrentPass('');
-      setNewPass('');
-    } else {
-      setPassNotice({ type: 'error', text: res.error || 'Failed to update password.' });
-    }
-  };
+  const isAdmin = currentUser?.role === 'admin';
 
   // Calculate probation countdown if in probation
   const joinDate = new Date(currentEmployee.dateOfJoining);
   const probationEnd = new Date(currentEmployee.probationEndDate);
-  const now = new Date('2026-08-20');
+  const now = new Date();
   const diffTime = probationEnd.getTime() - now.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
@@ -63,11 +46,13 @@ export const EmployeeProfile: React.FC = () => {
       <div className="relative overflow-hidden rounded-2xl bg-[#0c121e] border border-slate-800 p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <img
-              src={currentEmployee.profilePhoto}
-              alt={currentEmployee.fullName}
-              className="w-20 h-20 rounded-2xl object-cover border-2 border-cyan-500 shadow-xl shadow-cyan-950/40"
-            />
+            <div className="relative">
+              <img
+                src={currentEmployee.profilePhoto}
+                alt={currentEmployee.fullName}
+                className="w-20 h-20 rounded-2xl object-cover border-2 border-cyan-500 shadow-xl shadow-cyan-950/40"
+              />
+            </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-mono text-xs font-bold text-cyan-400">
@@ -83,6 +68,13 @@ export const EmployeeProfile: React.FC = () => {
               <p className="text-xs text-slate-300">
                 {currentEmployee.designation} • <strong className="text-cyan-300">{currentEmployee.department}</strong>
               </p>
+              
+              <div className="flex items-center gap-2 mt-2">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 text-[10px] font-semibold">
+                  <Lock className="w-3 h-3 text-amber-400" />
+                  <span>Profile Photo: Managed by HR Administration</span>
+                </span>
+              </div>
             </div>
           </div>
 
@@ -219,31 +211,44 @@ export const EmployeeProfile: React.FC = () => {
           </div>
         </div>
 
-        {/* 3. Compensation Information (Strictly Scoped) */}
+        {/* 3. Compensation Information (Salary Hidden for Staff) */}
         <div className="rounded-2xl bg-[#0c121e] border border-slate-800 p-6 space-y-4">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-800">
             <DollarSign className="w-5 h-5 text-emerald-400" />
             <h3 className="text-sm font-bold text-white font-['Space_Grotesk']">
-              Compensation Details
+              Compensation & Adjustments
             </h3>
           </div>
 
           <div className="space-y-3 text-xs">
-            <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
-              <span className="text-[10px] text-slate-400 font-bold uppercase">Monthly Base Salary</span>
-              <div className="text-xl font-bold font-mono text-white mt-0.5">
-                {currentEmployee.monthlySalary.toLocaleString()} <span className="text-xs text-slate-400">RS (PKR)</span>
+            {isAdmin ? (
+              <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
+                <span className="text-[10px] text-slate-400 font-bold uppercase">Monthly Base Salary</span>
+                <div className="text-xl font-bold font-mono text-white mt-0.5">
+                  {currentEmployee.monthlySalary.toLocaleString()} <span className="text-xs text-slate-400">RS (PKR)</span>
+                </div>
+                <span className="text-[10px] text-slate-500">Effective from {currentEmployee.salaryEffectiveDate}</span>
               </div>
-              <span className="text-[10px] text-slate-500">Effective from {currentEmployee.salaryEffectiveDate}</span>
-            </div>
+            ) : (
+              <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
+                <span className="text-[10px] text-slate-400 font-bold uppercase">Monthly Base Salary</span>
+                <div className="text-sm font-bold text-slate-400 mt-1 flex items-center gap-2">
+                  <Lock className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Confidential • Admin Managed</span>
+                </div>
+                <span className="text-[10px] text-slate-500 mt-1 block">
+                  Official contract records secured by HR Administration
+                </span>
+              </div>
+            )}
 
             <div>
               <span className="text-[11px] text-slate-400 block">Payment Frequency</span>
-              <span className="text-slate-200">{currentEmployee.paymentFrequency} (1st of each month)</span>
+              <span className="text-slate-200">{currentEmployee.paymentFrequency} (1st-5th of each month)</span>
             </div>
 
             <div>
-              <span className="text-[11px] text-slate-400 block">Current Approved Bonus</span>
+              <span className="text-[11px] text-slate-400 block">Current Approved KPI Bonus</span>
               <span className="font-mono font-semibold text-emerald-400">
                 +{currentEmployee.currentBonus.toLocaleString()} RS
               </span>
@@ -272,17 +277,17 @@ export const EmployeeProfile: React.FC = () => {
           </div>
         </div>
 
-        {/* 4. Portal Sign-In & Security Credentials Card */}
+        {/* 4. Portal Sign-In & Security Credentials Card (Locked for Staff) */}
         <div className="rounded-2xl bg-[#0c121e] border border-slate-800 p-6 space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-slate-800">
             <div className="flex items-center gap-2">
               <KeyRound className="w-5 h-5 text-cyan-400" />
               <h3 className="text-sm font-bold text-white font-['Space_Grotesk']">
-                Portal Sign-In & Credentials
+                Portal Sign-In & Security
               </h3>
             </div>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-cyan-950 text-cyan-300 border border-cyan-800">
-              Admin Managed
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-amber-950/80 text-amber-300 border border-amber-800/60 flex items-center gap-1">
+              <Lock className="w-2.5 h-2.5" /> Admin Only
             </span>
           </div>
 
@@ -297,65 +302,25 @@ export const EmployeeProfile: React.FC = () => {
                 <span className="font-semibold text-white capitalize">{currentUser?.role}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-400 text-[11px]">Assigned By:</span>
+                <span className="text-slate-400 text-[11px]">Credential Manager:</span>
                 <span className="text-slate-300">{currentUser?.assignedBy || 'HR Administration'}</span>
               </div>
             </div>
 
-            {/* Change Password Form */}
-            <form onSubmit={handlePasswordChange} className="space-y-2.5 pt-2 border-t border-slate-800">
-              <span className="text-[11px] font-bold text-slate-300 block">
-                Update Account Password
-              </span>
-
-              {passNotice && (
-                <div
-                  className={`p-2 rounded-lg text-[11px] ${
-                    passNotice.type === 'success'
-                      ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-800'
-                      : 'bg-red-950/80 text-red-300 border border-red-800'
-                  }`}
-                >
-                  {passNotice.text}
-                </div>
-              )}
-
-              <div>
-                <input
-                  type="password"
-                  required
-                  value={currentPass}
-                  onChange={e => setCurrentPass(e.target.value)}
-                  placeholder="Current Password"
-                  className="w-full p-2 rounded-lg bg-slate-950 border border-slate-700 text-white font-mono text-xs focus:ring-1 focus:ring-cyan-500"
-                />
+            {/* Password Policy & Admin Notice */}
+            <div className="p-3.5 rounded-xl bg-slate-950/90 border border-slate-800/90 space-y-2">
+              <div className="flex items-center gap-2 text-amber-400 font-bold text-xs">
+                <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0" />
+                <span>Password & Profile Photo Policy</span>
               </div>
-
-              <div className="relative">
-                <input
-                  type={showPass ? 'text' : 'password'}
-                  required
-                  value={newPass}
-                  onChange={e => setNewPass(e.target.value)}
-                  placeholder="New Password (min 6 chars)"
-                  className="w-full p-2 pr-8 rounded-lg bg-slate-950 border border-slate-700 text-white font-mono text-xs focus:ring-1 focus:ring-cyan-500"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPass(!showPass)}
-                  className="absolute right-2.5 top-2 text-slate-400 hover:text-white"
-                >
-                  {showPass ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                </button>
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                Security credentials and profile pictures are controlled and updated exclusively by the HR & Admin team. Employees do not have self-service editing privileges.
+              </p>
+              <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px]">
+                <span className="text-slate-500">Need a password reset?</span>
+                <span className="text-cyan-400 font-semibold">Contact HR Desk</span>
               </div>
-
-              <button
-                type="submit"
-                className="w-full py-2 rounded-xl bg-cyan-950/90 hover:bg-cyan-900 border border-cyan-700/80 text-cyan-300 font-bold text-xs transition-colors"
-              >
-                Change Password
-              </button>
-            </form>
+            </div>
           </div>
         </div>
 
@@ -363,3 +328,4 @@ export const EmployeeProfile: React.FC = () => {
     </div>
   );
 };
+

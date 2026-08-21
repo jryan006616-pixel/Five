@@ -11,11 +11,14 @@ import {
   Calendar,
   CreditCard,
   Building,
+  Lock,
+  ShieldCheck,
 } from 'lucide-react';
 
 export const EmployeeSalary: React.FC = () => {
   const {
     currentEmployee,
+    currentUser,
     salaryRecords,
     deductions,
     setSelectedPayslipForModal,
@@ -25,6 +28,8 @@ export const EmployeeSalary: React.FC = () => {
   const [selectedMonth, setSelectedMonth] = useState('August 2026');
 
   if (!currentEmployee) return null;
+
+  const isAdmin = currentUser?.role === 'admin';
 
   const currentSal = salaryRecords.find(
     s => s.employeeId === currentEmployee.id && s.month === selectedMonth
@@ -55,11 +60,11 @@ export const EmployeeSalary: React.FC = () => {
           <div className="flex items-center gap-2">
             <DollarSign className="w-5 h-5 text-emerald-400" />
             <h1 className="text-xl font-bold font-['Space_Grotesk'] text-white">
-              My Salary & Deductions Breakdown
+              Compensation Adjustments & Deductions
             </h1>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Complete transparency into base pay, performance incentives, and itemized deduction reasons.
+            Official breakdown of performance bonuses, monthly incentives, and transparent itemized deductions.
           </p>
         </div>
 
@@ -77,10 +82,10 @@ export const EmployeeSalary: React.FC = () => {
           {matchedPayslip && (
             <button
               onClick={() => setSelectedPayslipForModal(matchedPayslip)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold shadow-md transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold shadow-md transition-colors cursor-pointer"
             >
               <FileText className="w-3.5 h-3.5" />
-              <span>View Payslip</span>
+              <span>View Official Slip</span>
             </button>
           )}
         </div>
@@ -88,26 +93,35 @@ export const EmployeeSalary: React.FC = () => {
 
       {/* Salary Overview Formula Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Base */}
+        {/* Base (Confidential for Staff) */}
         <div className="p-5 rounded-2xl bg-[#0c121e] border border-slate-800 space-y-1">
           <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
             Base Monthly Salary
           </span>
-          <p className="text-2xl font-bold font-mono text-white">
-            {currentSal.baseSalary.toLocaleString()} <span className="text-xs text-slate-400">RS</span>
-          </p>
-          <span className="text-[10px] text-slate-500">Contracted Base Tier</span>
+          {isAdmin ? (
+            <p className="text-2xl font-bold font-mono text-white">
+              {currentSal.baseSalary.toLocaleString()} <span className="text-xs text-slate-400">RS</span>
+            </p>
+          ) : (
+            <div className="flex items-center gap-2 py-1">
+              <Lock className="w-4 h-4 text-amber-400" />
+              <span className="text-base font-bold text-slate-300 font-mono">Confidential</span>
+            </div>
+          )}
+          <span className="text-[10px] text-slate-500">
+            {isAdmin ? 'Contracted Base Tier' : 'HR Admin Restricted Access'}
+          </span>
         </div>
 
         {/* Bonus & Additions */}
         <div className="p-5 rounded-2xl bg-[#0c121e] border border-slate-800 space-y-1">
           <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider block">
-            + Bonus & Allowances
+            + Bonus & Incentives
           </span>
           <p className="text-2xl font-bold font-mono text-emerald-400">
             +{(currentSal.bonus + (currentSal.otherEarnings || 0)).toLocaleString()} <span className="text-xs text-slate-400">RS</span>
           </p>
-          <span className="text-[10px] text-emerald-500">Performance & Shift Differentials</span>
+          <span className="text-[10px] text-emerald-500">KPI Performance & Shift Differentials</span>
         </div>
 
         {/* Deductions */}
@@ -121,17 +135,18 @@ export const EmployeeSalary: React.FC = () => {
           <span className="text-[10px] text-red-500">{itemizedDeductions.length} Applied deductions</span>
         </div>
 
-        {/* Net Take-Home */}
-        <div className="p-5 rounded-2xl bg-gradient-to-r from-emerald-950/80 to-slate-900 border border-emerald-700/60 space-y-1">
-          <span className="text-[11px] font-bold text-emerald-300 uppercase tracking-wider block">
-            = Net Take-Home Pay
+        {/* Disbursement Status */}
+        <div className="p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-[#0e1626] to-[#0c121e] border border-cyan-800/60 space-y-1">
+          <span className="text-[11px] font-bold text-cyan-300 uppercase tracking-wider block">
+            Disbursement Mode
           </span>
-          <p className="text-2xl font-black font-mono text-white">
-            {currentSal.netSalary.toLocaleString()} <span className="text-xs text-emerald-300">RS (PKR)</span>
+          <p className="text-lg font-bold font-mono text-white flex items-center gap-1.5 pt-0.5">
+            <CreditCard className="w-4 h-4 text-cyan-400" />
+            <span>Bank Transfer (EFT)</span>
           </p>
-          <div className="flex items-center gap-1 text-[10px] text-emerald-400 font-semibold">
+          <div className="flex items-center gap-1 text-[10px] text-emerald-400 font-semibold pt-0.5">
             <CheckCircle2 className="w-3 h-3" />
-            <span>Status: {currentSal.paymentStatus}</span>
+            <span>Status: {currentSal.paymentStatus || 'Processing'}</span>
           </div>
         </div>
       </div>
@@ -146,7 +161,7 @@ export const EmployeeSalary: React.FC = () => {
                 Itemized Deductions & Policy Reasons
               </h2>
               <p className="text-xs text-slate-400">
-                "Why was this amount deducted?" — Transparent reasons for every applied adjustment.
+                Transparent reasons for every applied attendance, advance, or policy deduction.
               </p>
             </div>
           </div>
@@ -212,3 +227,4 @@ export const EmployeeSalary: React.FC = () => {
     </div>
   );
 };
+

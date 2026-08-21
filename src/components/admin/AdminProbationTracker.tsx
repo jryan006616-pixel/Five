@@ -23,7 +23,7 @@ export const AdminProbationTracker: React.FC = () => {
   const [remarks, setRemarks] = useState('');
   const [showCelebration, setShowCelebration] = useState(false);
 
-  const now = new Date('2026-08-20');
+  const now = new Date();
 
   // Categorize employees by probation status
   const employeesWithProbation = allEmployees.map(emp => {
@@ -53,7 +53,7 @@ export const AdminProbationTracker: React.FC = () => {
       setShowCelebration(true);
       setTimeout(() => setShowCelebration(false), 3000);
     } else {
-      updateProbationStatus(selectedEmpId, 'Probation Extended', remarks || `Probation extended by ${extensionDays} days for additional evaluation.`, extensionDays);
+      updateProbationStatus(selectedEmpId, 'Probation Extended', remarks || `Probation extended by ${extensionDays} days for additional evaluation.`);
     }
 
     setSelectedEmpId(null);
