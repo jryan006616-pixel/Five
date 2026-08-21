@@ -23,7 +23,7 @@ export interface CloudPayload {
   companyTasks: any[];
 }
 
-const CLOUD_SYNC_URL = 'https://kv.val.run/rhinomds_rcm_live_production_v1';
+const CLOUD_SYNC_URL = '/api/sync';
 const BROADCAST_CHANNEL_NAME = 'rhinomds_live_portal_sync';
 
 // BroadcastChannel for cross-tab real-time communication
